@@ -90,7 +90,7 @@ Preguntas guía del proyecto (ya respondidas en el EDA — ver sección 10):
   - `ciudad_sinam` 33,4% nula — estructural, solo aplica a hogares en ciertas capitales.
   - El resto de columnas (incluidas todas las usadas para el análisis de pobreza) **no tiene nulos**.
   - Distribución: 66.949 hogares pobres (24,2% de la muestra sin ponderar) y 21.605 en indigencia (7,8% sin ponderar) — **[COMPLETAR]** recalcular estos porcentajes ponderando por `fex_c` para el dato representativo de la población real.
-
+    
 ### 4.2. `Personas.csv` — nivel persona (**pendiente de integrar**)
 
 - 773.932 filas, 133 columnas, comparte `directorio`+`secuencia_p` con `Hogares.csv`. Ver sección 15 (pendientes).
@@ -126,7 +126,7 @@ Google Drive (Hogares.csv)
 
 ## 6. Modelo de datos: esquema de galaxia
 
-**Estado real de la implementación** (más simple que el diseño completo documentado en `docs/modelo_datos_esquema_galaxia.md`, que sigue siendo la referencia objetivo del proyecto):
+Se eligió un **esquema de galaxia (fact constellation)** porque el proyecto tiene **dos procesos de negocio con grano distinto** (el hogar y la persona) que comparten varias dimensiones. Un esquema de estrella único no encajaría bien porque forzaría a mezclar dos granularidades en una sola tabla de hechos.
 
 | Tabla | Grano implementado | Columnas cargadas |
 |---|---|---|
