@@ -115,24 +115,15 @@ El medallón describe **cómo se refinó el dato**; el esquema de galaxia descri
 
 ```
 ├── README.md
-├── requirements.txt
 ├── .gitignore
-├── .env.example
-├── data/raw/.gitkeep              # los CSV no se versionan
+├── data
 ├── notebooks/
 │   ├── 01_etl_eda_hogares.ipynb
 │   └── 02_etl_eda_personas.ipynb
 ├── sql/
 │   └── schema.sql
 ├── docs/
-│   ├── informe_tecnico.md
 │   ├── Informe_Tecnico_ETL_G51.docx
-│   ├── modelo_datos_esquema_galaxia.md
-│   ├── pendientes_notebook_personas.md
-│   ├── guia_repositorio_y_commits.md
-│   └── img/
-└── diccionarios/
-    ├── diccionario_hogares.md
-    └── diccionario_personas.md
+
 ```
 
