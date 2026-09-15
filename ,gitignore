@@ -1,0 +1,12 @@
+# Credenciales
+.env
+
+# Google Colab 
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# Datos crudos 
+*.csv
+
+# macOS
+.DS_Store
