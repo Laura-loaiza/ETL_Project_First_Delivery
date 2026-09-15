@@ -2,7 +2,7 @@
 
 **Universidad Autónoma de Occidente — Facultad de Ingeniería y Ciencias Básicas**
 **Programa:** Ingeniería de Datos e Inteligencia Artificial
-**Curso:** ETL (G51) — Primera Entrega
+**Curso:** ETL (G51) - Primera Entrega
 
 > - Sebastián Alejandro Jimenéz Solís
 > - Laura Valentina Loaiza Diaz
