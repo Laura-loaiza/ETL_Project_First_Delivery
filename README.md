@@ -122,7 +122,7 @@ El medallón describe **cómo se refinó el dato**; el esquema de galaxia descri
 │   ├── ETL_EDA_Hogares DEF.ipynb
 │   └── ETL_personas_DEF.ipynb
 ├── documentos/
-│   ├── Documentación ETL-Project: First Delivery.pdf
+│   ├── ETL-Project_First Delivery.pdf
 
 ```
 
