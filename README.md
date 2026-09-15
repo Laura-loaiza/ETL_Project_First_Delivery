@@ -116,14 +116,15 @@ El medallón describe **cómo se refinó el dato**; el esquema de galaxia descri
 ```
 ├── README.md
 ├── .gitignore
-├── data
+├── data/
+    ├── Enlaces datasets.txt
 ├── notebooks/
 │   ├── 01_etl_eda_hogares.ipynb
 │   └── 02_etl_eda_personas.ipynb
 ├── sql/
 │   └── schema.sql
-├── docs/
-│   ├── Informe_Tecnico_ETL_G51.docx
+├── documentos/
+│   ├── Documentación ETL-Project: First Delivery.pdf
 
 ```
 
