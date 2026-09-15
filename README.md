@@ -10,6 +10,7 @@
 > - Carlos Fabian Cordoba
 
 ## Objetivo del proyecto
+
 Analizar la distribución y la profundidad de la **pobreza y la pobreza extrema (indigencia)** en los hogares colombianos, a partir de datos de encuesta oficial, para responder preguntas útiles al diseño de política social: qué tan profunda es la pobreza, dónde se concentra, y qué características de los hogares y de las personas están asociadas a ella.
 
 El proyecto cubre el ciclo completo de un pipeline de datos: extracción de los archivos fuente, diseño de arquitectura, modelado dimensional, migración a una base de datos relacional, limpieza y transformación documentadas, y visualizaciones construidas **a partir de consultas SQL contra la base de datos**, no con el CSV original.
@@ -38,33 +39,47 @@ El proyecto cubre el ciclo completo de un pipeline de datos: extracción de los 
 | Lenguaje / ETL | **Python** (pandas, numpy) | Manejo maduro de datasets grandes (276k filas) y limpieza de datos |
 | Base de datos | **PostgreSQL gestionado en Supabase** | Motor relacional en la nube, no requiere infraestructura propia del equipo, accesible para todos los integrantes |
 | Conexión Python↔DB | **SQLAlchemy + psycopg2-binary** | `create_engine` + `to_sql()` para cargar los DataFrames de pandas directamente a las tablas de Postgres |
-| Visualización (EDA) | **matplotlib** | Gráficos de barras e histograma usados en las 3 preguntas del EDA |
+| Visualización (EDA) | **matplotlib** | Gráficos de barras e histograma usados en las preguntas del EDA |
 | Control de versiones | **Git / GitHub** | Exigido por la cátedra |
 
-## 5. Arquitectura del proyecto
+## Arquitectura del proyecto
+
+El pipeline de **Hogares** sigue extracción → transformación → carga → EDA de forma directa. El pipeline de **Personas** usa además una **arquitectura de medallón** (Bronce → Plata → Oro) antes de llegar al mismo esquema final:
+
+- **Bronce**: datos crudos del CSV de Personas, tal como vienen.
+- **Plata**: limpieza, columnas legibles (`sexo`, `grupo_edad`, `nivel_educativo`) y construcción de `condicion_laboral` a partir de `oc`/`des`/`fft`.
+- **Oro**: variables listas para análisis (ingresos en escala log, `tiene_segundo_empleo`), unidas contra `dim_hogar` para heredar la condición de pobreza del hogar.
+
+El medallón describe **cómo se refinó el dato**; el esquema de galaxia (constelación) describe **cómo queda organizado el dato final para consulta**. Son complementarios, no alternativos.
 
 ```
   Google Drive (Hogares.csv, Personas.csv)
             │  pd.read_csv
             ▼
   ┌─────────────────────────────────────────────────────────────┐
-  │ EXTRACCIÓN                                                  │
-  │ lectura + validación: llave única, rangos oficiales lp/li,  |
-  │duplicados                                                   |
+  │ EXTRACCIÓN                                                   │
+  │ lectura + validación: llave única, rangos oficiales lp/li,   │
+  │ duplicados                                                   │
   └─────────────────────────────────────────────────────────────┘
             ▼
   ┌─────────────────────────────────────────────────────────────┐
-  │ TRANSFORMACIÓN                                              |
-  | (pandas)                                                    |
-  | nulos, categorías legibles, brecha de pobreza,              |
-  | flag de outliers, tipado a category.                        |
-  | Arquitectura de medallon (personas).                        |
+  │ TRANSFORMACIÓN                                               │
+  │ Hogares (pandas): nulos, categorías legibles, brecha de      │
+  │ pobreza/indigencia, flag de outliers, tipado a category.     │
+  │ Personas: arquitectura de medallón (Bronce → Plata → Oro).   │
   └─────────────────────────────────────────────────────────────┘
             ▼
   ┌─────────────────────────────────────────────────────────────┐
-  │ CARGA — PostgreSQL (Supabase), vía SQLAlchemy               │
-  │ DDL (DROP + CREATE) → prueba con 100 filas → to_sql()       │
-  │ → verificación con SELECT COUNT(*)                          │
+  │ MODELO DIMENSIONAL — esquema de galaxia (constelación)       │
+  │ dim_geografia, dim_tiempo, dim_hogar (compartidas) +         │
+  │ dim_persona propia · fact_hogares y fact_personas comparten  │
+  │ dimensiones sin duplicar atributos entre sí                  │
+  └─────────────────────────────────────────────────────────────┘
+            ▼
+  ┌─────────────────────────────────────────────────────────────┐
+  │ CARGA — PostgreSQL (Supabase), vía SQLAlchemy                │
+  │ DDL (DROP + CREATE) → prueba con 100 filas → to_sql()        │
+  │ → verificación con SELECT COUNT(*)                           │
   └─────────────────────────────────────────────────────────────┘
             ▼
   ┌─────────────────────────────────────────────────────────────┐
@@ -73,16 +88,6 @@ El proyecto cubre el ciclo completo de un pipeline de datos: extracción de los 
   │ (todas las agregaciones ponderadas por fex_c dentro del SQL) │
   └─────────────────────────────────────────────────────────────┘
 ```
-
-El medallón describe **cómo se refinó el dato**; el esquema de galaxia describe **cómo queda organizado el dato final para consulta**. Son complementarios, no alternativos.
-
-
-## Instrucciones de ejecución
-1. **Clonar el repositorio y abrir el entorno:** Abrir el archivo `notebooks/ETL___EDA_Hogares.ipynb` en Google Colab.
-2. **Montar volúmenes:** Ejecutar la celda para montar Google Drive y ajustar la variable `ruta_base` a la carpeta donde se encuentra alojado el archivo `Hogares.csv`.
-3. **Instalar dependencias:** Ejecutar las celdas iniciales que instalan `psycopg2-binary` y `sqlalchemy`.
-4. **Credenciales seguras:** Al llegar a la celda de conexión a la base de datos, el sistema solicitará la contraseña de PostgreSQL mediante la librería `getpass` (esto evita que la clave quede en texto plano).
-5. **Ejecución del Pipeline:** Correr el resto de las celdas en orden. El script realizará la extracción, transformación, construcción de dimensiones/hechos, carga a Postgres y finalmente ejecutará el Análisis Exploratorio de Datos (EDA) conectándose a la base de datos.
 
 ## Cómo ejecutar el proyecto
 
@@ -97,19 +102,14 @@ El medallón describe **cómo se refinó el dato**; el esquema de galaxia descri
 1. Clonar el repositorio:
    ```bash
    git clone <url-del-repositorio>
-   cd etl-pobreza-extrema-g51
+   cd <nombre-del-repositorio>
    ```
-2. Instalar dependencias:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Copiar `.env.example` a `.env` y completar las credenciales de Postgres (el archivo `.env` está excluido por `.gitignore`).
-4. Ejecutar `notebooks/01_etl_eda_hogares.ipynb` de principio a fin:
-   - montar Drive y ajustar `ruta_base` a la carpeta donde estén los CSV;
-   - instalar `psycopg2-binary` y `sqlalchemy` en la celda inicial;
-   - ingresar la contraseña cuando la pida `getpass` (nunca escribirla en el notebook);
-   - el notebook crea el esquema, hace una prueba de carga con 100 filas, carga las dimensiones y `fact_hogares`, verifica los conteos y ejecuta el EDA con `pd.read_sql`.
-5. Ejecutar `notebooks/02_etl_eda_personas.ipynb`, siguiendo los pasos de [`docs/pendientes_notebook_personas.md`](docs/pendientes_notebook_personas.md) para la carga y el EDA de personas.
+2. Abrir `notebooks/ETL_EDA_Hogares_DEF.ipynb` en Google Colab.
+3. Montar Google Drive (celda inicial) y ajustar la variable `ruta_base` a la carpeta donde está `Hogares.csv`.
+4. Ejecutar las celdas iniciales que instalan `psycopg2-binary` y `sqlalchemy`.
+5. En la celda de conexión, ingresar la contraseña de Postgres cuando la pida `getpass` (Hogares2026SegPass91).
+6. Correr el resto de las celdas en orden: el notebook crea el esquema, hace una prueba de carga con 100 filas, carga las dimensiones y `fact_hogares`, verifica los conteos y ejecuta el EDA con `pd.read_sql`.
+7. Repetir el mismo flujo con `notebooks/ETL_personas_DEF.ipynb`.
 
 ## Estructura del repositorio
 
@@ -117,12 +117,10 @@ El medallón describe **cómo se refinó el dato**; el esquema de galaxia descri
 ├── README.md
 ├── .gitignore
 ├── data/
-    ├── Enlaces datasets.txt
+│   └── Enlaces datasets.txt
 ├── notebooks/
-│   ├── ETL_EDA_Hogares DEF.ipynb
+│   ├── ETL_EDA_Hogares_DEF.ipynb
 │   └── ETL_personas_DEF.ipynb
 ├── documentos/
-│   ├── Documentacion ETL-Project_ First Delivery.pdf
-
+│   ├── ETL-Project_First Delivery.pdf
 ```
-
