@@ -111,7 +111,7 @@ El medallón describe **cómo se refinó el dato**; el esquema de galaxia descri
    - el notebook crea el esquema, hace una prueba de carga con 100 filas, carga las dimensiones y `fact_hogares`, verifica los conteos y ejecuta el EDA con `pd.read_sql`.
 5. Ejecutar `notebooks/02_etl_eda_personas.ipynb`, siguiendo los pasos de [`docs/pendientes_notebook_personas.md`](docs/pendientes_notebook_personas.md) para la carga y el EDA de personas.
 
-## 12. Estructura del repositorio
+## Estructura del repositorio
 
 ```
 ├── README.md
